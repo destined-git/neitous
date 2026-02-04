@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Neitous — YouTube & Discord</title>
+    <style>
+      :root {
+        --bg: radial-gradient(circle at 0% 0%, #1f2937 0, #020617 45%, #000 100%);
+        --card-bg: rgba(15, 23, 42, 0.86);
+        --card-border: rgba(148, 163, 184, 0.4);
+        --accent: #ef4444;
+        --accent-soft: rgba(239, 68, 68, 0.18);
+        --text-main: #e5e7eb;
+        --text-soft: #9ca3af;
+        --chip-bg: rgba(15, 23, 42, 0.9);
+        --shadow-soft: 0 22px 60px rgba(15, 23, 42, 0.9);
+        --radius-lg: 22px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+          "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .shell {
+        width: 100%;
+        max-width: 1120px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2.4fr);
+        gap: 28px;
+        align-items: center;
+      }
+
+      @media (max-width: 960px) {
+        body {
+          align-items: stretch;
+        }
+
+        .shell {
+          max-width: 720px;
+        }
+
+        .row {
+          grid-template-columns: minmax(0, 1fr);
+          align-items: flex-start;
+        }
+      }
+
+      .card {
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--card-border);
+        box-shadow: var(--shadow-soft);
+        padding: 18px 18px 16px;
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: -40%;
+        background:
+          radial-gradient(circle at 0 0, rgba(248, 113, 113, 0.22), transparent 60%),
+          radial-gradient(circle at 100% 0, rgba(59, 130, 246, 0.26), transparent 60%);
+        opacity: 0.75;
+        mix-blend-mode: soft-light;
+        pointer-events: none;
+      }
+
+      .card-inner {
+        position: relative;
+        z-index: 1;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 11px 5px 6px;
+        border-radius: 999px;
+        background:
+          linear-gradient(120deg, rgba(2, 6, 23, 0.9), rgba(15, 23, 42, 0.94));
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        box-shadow: 0 12px 40px rgba(15, 23, 42, 0.9);
+        margin-bottom: 12px;
+        width: fit-content;
+      }
+
+      .eyebrow-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 30% 20%, #f97316 0, #ef4444 20%, #991b1b 85%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fef2f2;
+        flex-shrink: 0;
+      }
+
+      .eyebrow-icon svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .eyebrow-label {
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-soft);
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(24px, 3vw, 32px);
+        letter-spacing: -0.03em;
+      }
+
+      .subtitle {
+        margin: 0 0 20px;
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--text-soft);
+        max-width: 32rem;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 11px;
+        border-radius: 999px;
+        background: var(--chip-bg);
+        border: 1px solid rgba(55, 65, 81, 0.9);
+        font-size: 11px;
+        color: var(--text-soft);
+        backdrop-filter: blur(18px);
+      }
+
+      .chip-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: #22c55e;
+        box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.16);
+      }
+
+      .chip-pill {
+        font-size: 10px;
+        padding: 3px 7px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(55, 65, 81, 0.85);
+      }
+
+      .primary-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
+      .btn-primary,
+      .btn-ghost {
+        border-radius: 999px;
+        font-size: 13px;
+        padding: 8px 14px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        transition:
+          background-color 150ms ease,
+          border-color 150ms ease,
+          transform 120ms ease,
+          box-shadow 150ms ease;
+      }
+
+      .btn-primary {
+        background: linear-gradient(120deg, #ef4444, #f97316);
+        color: #fef2f2;
+        box-shadow: 0 14px 38px rgba(248, 113, 113, 0.45);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 18px 50px rgba(248, 113, 113, 0.6);
+      }
+
+      .btn-ghost {
+        background: rgba(15, 23, 42, 0.7);
+        border-color: rgba(75, 85, 99, 0.9);
+        color: var(--text-soft);
+      }
+
+      .btn-ghost:hover {
+        border-color: rgba(148, 163, 184, 0.85);
+        background: rgba(15, 23, 42, 0.9);
+      }
+
+      .btn-primary svg,
+      .btn-ghost svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .meta {
+        font-size: 11px;
+        color: var(--text-soft);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .meta strong {
+        color: #e5e7eb;
+        font-weight: 600;
+      }
+
+      .dot-separator {
+        width: 4px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(75, 85, 99, 0.9);
+      }
+
+      .player-card {
+        position: relative;
+        border-radius: 24px;
+        padding: 3px;
+        background:
+          radial-gradient(circle at 0 0, rgba(248, 113, 113, 0.8), transparent 55%),
+          radial-gradient(circle at 100% 0, rgba(59, 130, 246, 0.7), transparent 55%),
+          radial-gradient(circle at 50% 120%, rgba(16, 185, 129, 0.75), transparent 55%);
+        box-shadow: 0 26px 80px rgba(15, 23, 42, 0.95);
+      }
+
+      .player-inner {
+        border-radius: 20px;
+        background: radial-gradient(circle at 10% 0, #020617 0, #020617 40%, #020617 100%);
+        padding: 12px 12px 10px;
+        border: 1px solid rgba(15, 23, 42, 0.95);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .avatar-layout {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+        min-height: 0;
+      }
+
+      .avatar-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .avatar-ring {
+        position: relative;
+        width: min(220px, 65vw);
+        height: min(220px, 65vw);
+        border-radius: 999px;
+        padding: 5px;
+        background:
+          conic-gradient(
+            from 220deg,
+            #ef4444,
+            #f97316,
+            #eab308,
+            #22c55e,
+            #3b82f6,
+            #a855f7,
+            #ef4444
+          );
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.9);
+      }
+
+      .avatar-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 999px;
+        background: radial-gradient(circle at 30% 0%, #0b1120 0, #020617 55%, #020617 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 1px solid rgba(15, 23, 42, 0.9);
+      }
+
+      .avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .avatar-fallback {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 64px;
+        font-weight: 800;
+        letter-spacing: -0.06em;
+        color: #e5e7eb;
+        text-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+      }
+
+      .avatar-tag {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(31, 41, 55, 0.9);
+        font-size: 11px;
+        color: var(--text-soft);
+      }
+
+      .avatar-tag svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      .avatar-text {
+        text-align: center;
+        max-width: 260px;
+      }
+
+      .avatar-title {
+        margin: 0 0 4px;
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+
+      .avatar-subtitle {
+        margin: 0 0 10px;
+        font-size: 13px;
+        color: var(--text-soft);
+      }
+
+      .discord-btn {
+        margin-top: 2px;
+        padding-inline: 18px;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .discord-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .status {
+        font-size: 11px;
+        margin-top: 6px;
+        color: var(--text-soft);
+      }
+
+      .status strong {
+        color: #f97316;
+      }
+
+      .status a {
+        color: #93c5fd;
+        text-decoration: none;
+      }
+
+      .status a:hover {
+        text-decoration: underline;
+      }
+
+      .status-ok strong {
+        color: #22c55e;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="row">
+        <section class="card" aria-label="Channel intro">
+          <div class="card-inner">
+            <div class="eyebrow">
+              <div class="eyebrow-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <rect x="3" y="6" width="18" height="12" rx="3" fill="#ff0000" />
+                  <polygon points="11,9 15,12 11,15" fill="#ffffff" />
+                </svg>
+              </div>
+              <span class="eyebrow-label">@NeitousYT • Community</span>
+            </div>
+
+            <h1>Hang out with the Neitous community.</h1>
+            <p class="subtitle">
+              A clean little landing card for your
+              <strong>YouTube channel</strong> and
+              <strong>Discord server</strong>. Drop this file on any static host
+              and you have a simple, on-brand way to send people to your
+              community.
+            </p>
+
+            <div class="chips">
+              <div class="chip">
+                <span class="chip-dot" aria-hidden="true"></span>
+                <span>Channel handle: @NeitousYT</span>
+              </div>
+              <div class="chip">
+                <span class="chip-pill">Discord</span>
+                <span>Invite: discord.gg/ZNk8q6Bee2</span>
+              </div>
+            </div>
+
+            <div class="primary-actions">
+              <a
+                href="https://www.youtube.com/@NeitousYT"
+                class="btn-primary"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="6" width="18" height="12" rx="3" fill="#ffffff" />
+                  <polygon points="11,9 15,12 11,15" fill="#ff0000" />
+                </svg>
+                <span>Open YouTube channel</span>
+              </a>
+
+              <a
+                href="https://discord.gg/ZNk8q6Bee2"
+                class="btn-ghost"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M19.54 5.23A18.36 18.36 0 0 0 15.86 4l-.18.35a16.47 16.47 0 0 1 2.03.73 6.44 6.44 0 0 0-2.41-1.1 11.72 11.72 0 0 0-5.6 0 6.56 6.56 0 0 0-2.44 1.1c.66-.33 1.35-.57 2.06-.74L9.14 4a18.36 18.36 0 0 0-3.68 1.23A19.25 19.25 0 0 0 3 17.5a11.9 11.9 0 0 0 3.67 1.87l.3-.48a7.38 7.38 0 0 1-1.85-.9l.23-.18c.36.27.73.5 1.12.7a11.9 11.9 0 0 0 9.06 0c.39-.2.76-.43 1.12-.7l.23.18c-.58.35-1.2.66-1.84.9l.3.48A11.9 11.9 0 0 0 21 17.5a19.25 19.25 0 0 0-1.46-12.27ZM9.75 14.5c-.7 0-1.27-.64-1.27-1.42 0-.78.57-1.42 1.27-1.42.71 0 1.28.64 1.28 1.42 0 .78-.57 1.42-1.28 1.42Zm4.5 0c-.71 0-1.28-.64-1.28-1.42 0-.78.57-1.42 1.28-1.42.7 0 1.27.64 1.27 1.42 0 .78-.57 1.42-1.27 1.42Z"
+                  />
+                </svg>
+                <span>Join the Discord</span>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section class="player-card" aria-label="YouTube avatar and Discord invite">
+          <div class="player-inner">
+            <div class="avatar-layout">
+              <div class="avatar-wrap">
+                <div class="avatar-ring">
+                  <div class="avatar-inner">
+                    <!--
+                      Replace the src below with the direct URL to
+                      your YouTube profile picture if you want a
+                      perfect match. The fallback "N" will still
+                      render if the image fails to load.
+                    -->
+                    <img
+                      class="avatar-img"
+                      src="./Neitous.jpg"
+                      alt="Neitous YouTube profile picture"
+                    />
+                    <div class="avatar-tag">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="6" width="18" height="12" rx="3" fill="#ff0000" />
+                        <polygon points="11,9 15,12 11,15" fill="#ffffff" />
+                      </svg>
+                      <span>@NeitousYT</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="avatar-text">
+                <p class="avatar-title">Join the Discord</p>
+                <p class="avatar-subtitle">
+                  Hang out with people who watch the channel, get early pings
+                  for uploads, and share what you’re building.
+                </p>
+                <a
+                  href="https://discord.gg/ZNk8q6Bee2"
+                  class="btn-primary discord-btn"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      fill="#5865F2"
+                      d="M20.317 4.369A18.043 18.043 0 0 0 16.558 3.2a12.66 12.66 0 0 0-.6 1.243 16.532 16.532 0 0 0-3.917 0A12.64 12.64 0 0 0 11.44 3.2 18.02 18.02 0 0 0 7.68 4.37C4.67 8.67 3.98 12.843 4.27 16.958A18.12 18.12 0 0 0 8.34 18.8a13.01 13.01 0 0 0 1.04-1.692 11.6 11.6 0 0 1-1.64-.79c.138-.1.273-.205.402-.313a8.38 8.38 0 0 0 7.72 0c.132.108.267.213.402.313-.52.31-1.07.58-1.64.79.3.6.64 1.17 1.03 1.7a18.06 18.06 0 0 0 4.07-1.84c.33-4.49-.56-8.63-2.38-12.59ZM10 14.75c-.83 0-1.5-.78-1.5-1.75S9.17 11.25 10 11.25 11.5 12.03 11.5 13 10.83 14.75 10 14.75Zm4 0c-.83 0-1.5-.78-1.5-1.75S13.17 11.25 14 11.25 15.5 12.03 15.5 13 14.83 14.75 14 14.75Z"
+                    />
+                  </svg>
+                  <span>Join server</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>
+
